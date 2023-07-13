@@ -11,12 +11,19 @@ let quick_hit_volume = 0.4;
 
 let rate_range = 0.03;
 
+//fonts
+let bit_font, bit_front_back;
+
 //fbo fuckery
-let screen_w = 128*1;
-let screen_h = 128*1;
+let screen_w = 128*2;
+let screen_h = 128*2;
 let fbo, fbo_buffer;
 
 
+function preload(){
+    bit_font = loadBitmapFont('var_width_fonts/scumm.png', 'var_width_fonts/scumm.json');
+    bit_font_back = loadBitmapFont('var_width_fonts/scumm_red.png', 'var_width_fonts/scumm.json');
+}
 
 function setup() {
     //createCanvas(window.innerWidth,window.innerHeight);//.parent("canvasParent").id("drawingCanvas");
@@ -147,6 +154,8 @@ function play_quick_hit(id){
 function render(){
     background(100);
 
+
+
     if (frameCount == 3 ){
         //slam the current fbo into the buffer
         fbo_buffer.image(fbo,0,0);
@@ -161,9 +170,6 @@ function render(){
     //now draw the real fbo
     fbo.background(0);
 
-    //testing
-    //fuck_about()
-    
     //throw down the last frame
     // fbo.push()
     // fbo.translate(screen_w/2, screen_h/2);
@@ -184,7 +190,7 @@ function render(){
 
     fbo.noStroke();
     fbo.fill(255)
-    fbo.rect( Math.floor(mouseX-10),  Math.floor(mouseY-10), 20,20)
+    fbo.rect( Math.floor(mouseX-5),  Math.floor(mouseY-5), 10,10)
 
     //fbo.textFont("Courier New");
     fbo.textSize(15)
@@ -192,15 +198,29 @@ function render(){
     fbo.fill(255);
     fbo.stroke(100,0,0)
     fbo.strokeWeight(1)
-    fbo.text("Hell yeah man", screen_w/2, 25);
+    
+    
 
-    fbo.text("Look out", screen_w/2, screen_h-10);
+    //fbo.text("Hell yeah man", screen_w/2, 25);
+
+    //fbo.text("Look out", screen_w/2, screen_h-10);
+
+
+    fbo.bitmapTextFont(bit_font_back);
+    fbo.bitmapText(`Hell yeah man`, 10-1, 40+1);
+    fbo.bitmapTextFont(bit_font);
+    fbo.bitmapText(`Hell yeah man`, 10, 40);
+
+    fbo.bitmapTextFont(bit_font);
+    fbo.bitmapText("Look Out", 40, screen_h-40);
 
 
     //random blips
     fbo.noStroke();
-    fbo.fill( random(100,250));
-    fbo.circle(random(0, screen_w), random(0, screen_h), random(1,3))
+    for (let i=0; i<2; i++){
+        fbo.fill( random(100,250));
+        fbo.circle(random(0, screen_w), random(0, screen_h), random(1,6))
+    }
     
     //draw the fbo
     image(fbo, 0, 0);
@@ -219,14 +239,14 @@ function fuck_about(){
 
     let time = millis() / 3000;
 
-    let shrink_prc = 1.04;// 1.01 + sin(time * 0.7) * 0.1;
+    let shrink_prc = 1.03;// 1.01 + sin(time * 0.7) * 0.1;
 
     let noise_shuffle_chance = 0.1;
    
     let center_move_dist = 3;
     //let curve = 1;
 
-    let center_x = fbo_buffer.width/4 + sin(time) * center_move_dist;
+    let center_x = fbo_buffer.width/2 + sin(time) * center_move_dist;
     let center_y = fbo_buffer.height/2 + cos(time) * center_move_dist;
 
     for (let p=0; p<fbo_buffer.pixels.length; p+=4){
@@ -276,7 +296,11 @@ function fuck_about(){
             }
             
             //tint it down a bit
-            if (i<4)    fbo_buffer.pixels[p+i] *= 0.9
+            if (fbo_buffer.pixels[p+i] > 200){
+                fbo_buffer.pixels[p+i] *= 0.7
+            }else{
+                fbo_buffer.pixels[p+i] *= 0.95
+            }
         }
         
         // if (x > 10 && x < 20){
@@ -295,50 +319,3 @@ function fuck_about(){
 
 
 
-
-
-
-//https://gist.github.com/GoToLoop/2e12acf577506fd53267e1d186624d7c
-p5.Image.prototype.resizeNN = function (w, h) {
-    "use strict";
-  
-    // Locally cache current image's canvas' dimension properties:
-    const { width, height } = this.canvas;
-  
-    // Sanitize dimension parameters:
-    w = ~~Math.abs(w), h = ~~Math.abs(h);
-  
-    // Quit prematurely if both dimensions are equal or parameters are both 0:
-    if (w === width && h === height || !(w | h))  return this;
-  
-    // Scale dimension parameters:
-    if (!w)  w = h*width  / height | 0; // only when parameter w is 0
-    if (!h)  h = w*height / width  | 0; // only when parameter h is 0
-  
-    const img = new p5.Image(w, h), // creates temporary image
-          sx = w / width, sy = h / height; // scaled coords. for current image
-  
-    this.loadPixels(), img.loadPixels(); // initializes both 8-bit RGBa pixels[]
-  
-    // Create 32-bit viewers for current & temporary 8-bit RGBa pixels[]:
-    const pixInt = new Int32Array(this.pixels.buffer),
-          imgInt = new Int32Array(img.pixels.buffer);
-  
-    // Transfer current to temporary pixels[] by 4 bytes (32-bit) at once:
-    for (var x = 0, y = 0; y < h; x = 0) {
-      const curRow = width * ~~(y/sy), tgtRow = w * y++;
-  
-      while (x < w) {
-        const curIdx = curRow + ~~(x/sx), tgtIdx = tgtRow + x++;
-        imgInt[tgtIdx] = pixInt[curIdx];
-      }
-    }
-  
-    img.updatePixels(); // updates temp 8-bit RGBa pixels[] w/ its current state
-  
-    // Resize current image to temporary image's dimensions:
-    this.canvas.width = this.width = w, this.canvas.height = this.height = h;
-    this.drawingContext.drawImage(img.canvas, 0, 0, w, h, 0, 0, w, h);
-  
-    return this;
-  };

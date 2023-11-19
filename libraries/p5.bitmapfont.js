@@ -342,10 +342,74 @@ let bitmapText = function(str, xScreenPos, yScreenPos) {
 };
 p5.prototype.bitmapText = bitmapText;
 
+//ANDY EDIT
+//DOES NOT WORK YET
+let bitmapStringWidth = function(str) {
+    let that = this;
+
+    if (this.currFont === undefined || this.currFont === null || !this.currFont.ready) {
+        return;
+    }
+
+    // If user tries to pass in zero,
+    // nothing renders, so let's just convert to a string.
+    if (typeof str === 'number') {
+        str = '' + str;
+    }
+
+    if (this.currFont.usingGrid === true) {
+        //I HAVE NOT TESTED THIS
+        console.log("NOT TESTED. DO NOT USE YET");
+        return this.currFont.glyphWidth * str.length + this.currFont.charSpacing * (str.length - 1);   
+        // for (let i = 0, len = str.length; i < len; ++i) {
+        //     // TODO: comment on magic number
+        //     let code = str[i].charCodeAt(0) - 32;
+        //     let glyph = this.currFont.getGlyph(code);
+
+        //     that.image(glyph, xScreenPos + (i * (this.currFont.glyphWidth + (this.currFont.charSpacing|| 0) )), yScreenPos);
+        // }
+    }
+    // 
+    else {
+        let xAdvance = 0;
+        let lastChar = null;
+        let cur_total = 0;
+
+        for (let i = 0, len = str.length; i < len; ++i) {
+            let char = str[i].charCodeAt(0);
+            let glyph = this.currFont.getGlyph(char);
+            let xKerning = 0;
+
+            // If we are at least after the second character
+            if (i > 0) {
+                let key = `${lastChar}${this.currFont.kernSeparator}${char}`;
+                xKerning = this.currFont.kernings.get(key) || 0;
+            }
+
+            let yoffset = this.currFont.glyphMetaData[char].yoffset;
+            let xTotal = 0 + xAdvance + xKerning;
+            
+
+            // if (glyph) {
+            //     that.image(glyph, xTotal, yScreenPos + yoffset);
+            // }
+
+            // TODO: remove magic number
+            xAdvance += this.currFont.glyphMetaData[char].xadvance;
+            lastChar = char;
+
+            cur_total = xAdvance;
+        }
+        return cur_total;
+    }
+};
+p5.prototype.bitmapStringWidth = bitmapStringWidth;
+
 module.exports = function setup(p5) {
   p5.prototype.loadBitmapFont = loadBitmapFont;
   p5.prototype.bitmapTextFont = bitmapTextFont;
-  p5.prototype.bitmapText = bitmapText 
+  p5.prototype.bitmapText = bitmapText ;
+  p5.prototype.bitmapStringWidth = bitmapStringWidth ;
 }
 
 /***/ })

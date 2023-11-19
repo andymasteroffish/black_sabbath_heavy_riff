@@ -15,24 +15,33 @@ function make_word({text, x, y } ){
         wiggle_x : 0.5,
         wiggle_y : 0.5,
         wiggle_range : 0.1,
-        max_wiggle : 4
+        max_wiggle : 4,
+
+        kill_me : false,
+        kill_timer : null
     }
 
     return word;
 }
 
 
-
-
-function draw_word(word, fbo){
-
+function update_word(word){
     //adjust the wiggle
     word.wiggle_x += random(-word.wiggle_range, word.wiggle_range);
     word.wiggle_y += random(-word.wiggle_range, word.wiggle_range);
-
     word.wiggle_x = constrain(word.wiggle_x, -word.max_wiggle, word.max_wiggle);
     word.wiggle_y = constrain(word.wiggle_y, -word.max_wiggle, word.max_wiggle);
 
+    //check if we're dying
+    if (word.kill_timer != null){
+        word.kill_timer--;
+        if (word.kill_timer <= 0){
+            word.kill_me = true;
+        }
+    }
+}
+
+function draw_word(word, fbo){
     //set the pos
     let this_x = floor( word.x + word.wiggle_x );
     let this_y = floor( word.y + word.wiggle_y );
@@ -42,4 +51,8 @@ function draw_word(word, fbo){
     fbo.bitmapText(word.text, this_x-1, this_y+1);
     fbo.bitmapTextFont(bit_font);
     fbo.bitmapText(word.text, this_x, this_y);
+}
+
+function kill_word_after(word, time){
+    word.kill_timer = time;
 }

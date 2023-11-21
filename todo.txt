@@ -11,19 +11,18 @@
 
 ## Flight Stuff
 
-[] headphone warning
+[X] headphone warning
 
-[] add a one shot for the text reveal
+[X] add a one shot for the text reveal
 
-[] minimum time for some text
-
-[] delay before next event
+[~] minimum time for some text
+[X] delay before next event
 
 [X] click a word to continue
     * and only change to that color when we're ready to continue
 
 [X] debug toggle for audio
-[] debug toggle for x,y, framerate
-[] debug click anywhere to advance
+[X] debug toggle for x,y, framerate
+[X] debug click anywhere to advance
 
 [X] mouse effect more obvious. maybe the link word color

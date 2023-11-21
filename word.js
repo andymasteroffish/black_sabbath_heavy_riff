@@ -3,7 +3,7 @@ const word_line_spacing = 21;
 
 const link_color = "#fa960a";
 
-function make_word({text, x, y, width } ){
+function make_word({text, x, y, width, event } ){
 
     let spread_x = 3;
     let spread_y = 3;
@@ -20,11 +20,15 @@ function make_word({text, x, y, width } ){
         wiggle_range : 0.1,
         max_wiggle : 4,
 
+        delay_timer : random(0,event.delay_time_wiggle),
+
         is_link : false,
 
         kill_me : false,
         kill_timer : null
     }
+
+    console.log(text+" delay "+word.delay_timer)
 
     word.box = {
         x: word.x-1,
@@ -54,6 +58,11 @@ function update_word(word){
 }
 
 function draw_word(word){
+    //if we're still int the delay time, bounce out
+    if (word.delay_timer-- > 0 ){
+        return;
+    }
+
     //set the pos
     let this_x = floor( word.x + word.wiggle_x );
     let this_y = floor( word.y + word.wiggle_y );
@@ -69,17 +78,11 @@ function draw_word(word){
     fbo.bitmapText(word.text, this_x, this_y);
 
     //testing
-    if (word.is_link){
-        // let box ={
-        //     x: word.x-1,
-        //     y: word.y+2,
-        //     w: word.text_width+2,
-        //     h: word_line_spacing-1
-        // };
-        fbo.stroke(link_color);
-        fbo.noFill();
-        fbo.rect(word.box.x, word.box.y, word.box.w,word. box.h);
-    }
+    // if (word.is_link){
+    //     fbo.stroke(link_color);
+    //     fbo.noFill();
+    //     fbo.rect(word.box.x, word.box.y, word.box.w,word. box.h);
+    // }
 
 }
 

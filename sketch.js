@@ -1,10 +1,11 @@
 //debug stuff
-const click_anywhere_to_advance = false;
-const disable_sound = true;
+const click_anywhere_to_advance = true;
+const disable_sound = false;
+const debug_fast_reveal = false;
 let show_debug = true;
 
 
-//aounds
+//sounds
 let sounds = [];
 let amp_wave_speed = [];
 
@@ -42,6 +43,9 @@ let words = [];
 //events
 let event_list = [];
 let cur_event = null;
+
+//into
+let in_intro = true;
 
 
 function preload(){
@@ -82,24 +86,21 @@ function setup() {
     
 
     //quick hits
-    quick_hits.push( make_quick_hit("audio/bastards.wav", 0.75, 0.9));
-    quick_hits.push( make_quick_hit("audio/light_of_day.wav", 0.9, 1.2));
-    quick_hits.push( make_quick_hit("audio/solo1_fade.wav", 0.96, 1.04));
-    quick_hits.push( make_quick_hit("audio/solo_isolated.wav", 0.96, 1.04));
+    quick_hits.push( make_quick_hit("audio/sabbath_bloody_sabbath.wav", "sabbath_bloody_sabbath", 0.75, 0.9));
+    quick_hits.push( make_quick_hit("audio/bastards.wav", "bastards", 0.75, 0.9));
+    quick_hits.push( make_quick_hit("audio/light_of_day.wav", "light_of_day", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/solo1_fade.wav", "solo1", 0.96, 1.04));
+    quick_hits.push( make_quick_hit("audio/solo_isolated.wav", "solo2", 0.96, 1.04));
     
     //word events
     event_list = [];
     setup_events();
-
-    //set_words("Hello how are you? I am doing very well thank you and blessings upon you", 15, 35);
-    
 
     resize_window();
 
     noSmooth();
     frameRate(30)
 
-    trigger_next_event();
 }
 
 function windowResized(){
@@ -130,11 +131,12 @@ function resize_window(){
 }
 
 //make an array of one-off sound effects
-function make_quick_hit(file_name, min_speed, max_speed){
+function make_quick_hit(file_name, id, min_speed, max_speed){
     let qh = {
         min_speed : min_speed,
         max_speed : max_speed,
-        sounds : []
+        sounds : [],
+        id : id
     }
     for (let i=0; i<5; i++){
         let sound = loadSound(file_name);
@@ -151,7 +153,7 @@ function draw() {
 
 
 
-function trigger_next_event(){
+function cue_next_event(){
     if (event_list.length == 0){
         console.log("NO MORE EVENTS");
         return;
@@ -160,11 +162,28 @@ function trigger_next_event(){
     //grab our new event
     let ev = event_list.shift();
 
+    //set the delay
+    if (ev.delay_timer == null){
+        ev.delay_timer = default_event_delay_time;
+    }
+    if (ev.delay_time_wiggle == null){
+        ev.delay_time_wiggle = default_delay_wiggle;
+    }
+
     //start a timer
     if (!ev.link_word_timer && ev.link_word){
         ev.link_word_timer = default_time_for_link;
     }
+    //ev.link_word_timer += ev.delay_time;
 
+    //debug fuckery
+    if (debug_fast_reveal){
+        ev.delay_time = 0;
+        ev.delay_time_wiggle = 0;
+        ev.link_word_timer = 1;
+    }
+
+    //stre the event
     cur_event = ev;
 
     //by default, make all existing words die
@@ -178,8 +197,6 @@ function trigger_next_event(){
         })
     }
 
-    //set the words for this event
-    set_words_from_event(ev);
 
     //play another sound
     if (next_sound < sounds.length-1 && !disable_sound){
@@ -197,11 +214,20 @@ function trigger_next_event(){
         console.log("start "+next_sound)
         next_sound++;
     }
+}
 
+function trigger_event(ev){
+    //do we have a sound cue?
+    if (ev.quick_hit_sound){
+        play_quick_hit(ev.quick_hit_sound);
+    }
+    //set the words for this event
+    set_words_from_event(ev);
 }
 
 function set_words_from_event(ev){
     console.log("set words: "+ev.text)
+    console.log(ev)
     texts = ev.text.split(" ");
 
     let padding = 15;
@@ -227,7 +253,8 @@ function set_words_from_event(ev){
             text : text,
             x : cur_x,
             y : cur_y,
-            width : width
+            width : width,
+            event : ev
         })
         //word.text_width = width;
 
@@ -254,21 +281,26 @@ function mouseReleased(){
 
 function mousePressed(){
 
+    //clikcing to exit the intro
+    if (in_intro){
+        in_intro = false;
+        cue_next_event();
+        return;
+    }
+
+    //debug tool
     if (click_anywhere_to_advance){
-        trigger_next_event();
+        cue_next_event();
         return;
     }
     
     //did they click a link word?
     words.forEach( word =>{
         if (word.is_link && mouse_x >= word.box.x && mouse_x <= word.box.x+word.box.w && mouse_y >= word.box.y && mouse_y <= word.box.y + word.box.h){
-            trigger_next_event();
+            cue_next_event();
             word.is_link = false;
         }
     })
-
-    //testing
-    //trigger_next_event();
 
 }
 
@@ -294,44 +326,65 @@ function update(){
 
     //checking on current event
     if (cur_event){
-        //auto advance
-        if (cur_event.auto_advance_timer){
-            cur_event.auto_advance_timer --;
-            if(cur_event.auto_advance_timer <= 0){
-                trigger_next_event();
+        //start with the delay
+        if (cur_event.delay_timer > 0){
+            cur_event.delay_timer--;
+            if (cur_event.delay_timer <= 0){
+                trigger_event(cur_event);
             }
         }
+        else{
+            //auto advance
+            if (cur_event.auto_advance_timer){
+                cur_event.auto_advance_timer --;
+                if(cur_event.auto_advance_timer <= 0){
+                    cue_next_event();
+                }
+            }
 
-        //turning on the link word
-        if (cur_event.link_word_timer){
-            cur_event.link_word_timer --;
-            console.log("timer: "+cur_event.link_word_timer)
-            if (cur_event.link_word_timer <= 0){
-                cur_event.link_word_timer = null;
-                //find the word
-                words.forEach( word => {
-                    if (word.text == cur_event.link_word){
-                        word.is_link = true;
-                        console.log("set word.text");
-                    }
-                })
+            //turning on the link word
+            if (cur_event.link_word_timer){
+                cur_event.link_word_timer --;
+                if (cur_event.link_word_timer <= 0){
+                    cur_event.link_word_timer = null;
+                    //find the word
+                    words.forEach( word => {
+                        if (word.text == cur_event.link_word){
+                            word.is_link = true;
+                            console.log("set word.text");
+                        }
+                    })
+                }
             }
         }
     }
 }
 
 function keyPressed(){
-    if (key == '1')     play_quick_hit(0);
-    if (key == '2')     play_quick_hit(1);
-    if (key == '4')     play_quick_hit(3);
-    if (key == '3')     play_quick_hit(2);
+    if (key == '1')     play_quick_hit("sabbath_bloody_sabbath");
+    // if (key == '2')     play_quick_hit(1);
+    // if (key == '4')     play_quick_hit(3);
+    // if (key == '3')     play_quick_hit(2);
 
     if (key == 'h')     show_debug = !show_debug
     
 }
 
 function play_quick_hit(id){
-    let qh = quick_hits[id];
+
+    let qh = null;
+    
+    quick_hits.forEach( hit => {
+        if (hit.id == id){
+            qh = hit;
+        }
+    })
+
+    if (qh == null){
+        console.log("NO QUICK HIT FOR ID:"+id);
+        return;
+    }
+    
     for (let i=0; i<qh.sounds.length; i++){
         let this_rate = random(qh.min_speed, qh.max_speed);
         qh.sounds[i].play(0, this_rate, quick_hit_volume, 0);
@@ -372,6 +425,40 @@ function render(){
         }
     }
 
+    //intro
+    if (in_intro){
+        let intro_lines = [
+            "Black Sabbath",
+            "Heavy Riff",
+            "",
+            "turn your",
+            "sound on",
+            "or come back",
+            "when you can",
+            "",
+            "click to start"
+        ]
+
+        let cur_y = 20;
+        let line_count = 0;
+        intro_lines.forEach( line => {
+            if (frameCount * 1.5 > cur_y){
+                if (line_count > 2){
+                    fbo.bitmapTextFont(bit_font_back);
+                }else{
+                    fbo.bitmapTextFont(bit_font);
+                }
+
+                let width = fbo.bitmapStringWidth(line);
+                fbo.bitmapText(line, screen_w/2 - width/2, cur_y);
+
+                cur_y += 20;
+            }
+            line_count++;
+        })
+        
+    }
+
     //mouse effect
     fbo.noStroke();
     fbo.fill(link_color);
@@ -381,10 +468,12 @@ function render(){
     fbo.rect( Math.floor(mouse_scatter_x-2),  Math.floor(mouse_scatter_y-2), 3,3)
 
     //random blips
-    fbo.noStroke();
-    for (let i=0; i<2; i++){
-        fbo.fill( random(100,250));
-        fbo.circle(random(0, screen_w), random(0, screen_h), random(1,6))
+    if (!in_intro){
+        fbo.noStroke();
+        for (let i=0; i<2; i++){
+            fbo.fill( random(100,250));
+            fbo.circle(random(0, screen_w), random(0, screen_h), random(1,6))
+        }
     }
     
     //draw the fbo
@@ -403,12 +492,18 @@ function render(){
 
 //the thing that does the pixel vortex effect
 function fuck_about(){
+    //if (in_intro)   return;
     fbo.loadPixels();
     fbo_buffer.loadPixels();
 
     //these times should probably be consts
     let time = millis() / 6000;
     let time2 = millis() / 4751;
+
+    if (in_intro){
+        time = 0;
+        time2 = 0;
+    }
 
     let shrink_prc = 1.03;// 1.01 + sin(time * 0.7) * 0.1;
 
@@ -421,7 +516,6 @@ function fuck_about(){
     let center_y = fbo_buffer.height/2 + cos(time2) * center_move_dist;
 
     for (let p=0; p<fbo_buffer.pixels.length; p+=4){
-        //let pixel = [fbo.pixels[p], fbo.pixels[p+1], fbo.pixels[p+2], fbo.pixels[p+3]]
         
         let x = (p/4)%fbo_buffer.width
         let y = Math.floor((p/4)/fbo_buffer.width)
@@ -438,10 +532,12 @@ function fuck_about(){
         let other_y = Math.floor( center_y + y_dist_from_center * shrink_prc );
 
         //noise
-        if (Math.random() < noise_shuffle_chance) other_x--;
-        if (Math.random() < noise_shuffle_chance) other_x++;
-        if (Math.random() < noise_shuffle_chance) other_y++;
-        if (Math.random() < noise_shuffle_chance) other_y--;
+        if (!in_intro){
+            if (Math.random() < noise_shuffle_chance) other_x--;
+            if (Math.random() < noise_shuffle_chance) other_x++;
+            if (Math.random() < noise_shuffle_chance) other_y++;
+            if (Math.random() < noise_shuffle_chance) other_y--;
+        }
 
         let other_p = (other_y*fbo.width + other_x)*4;    //array position
 

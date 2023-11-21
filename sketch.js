@@ -1,4 +1,10 @@
+//debug stuff
+const click_anywhere_to_advance = false;
+const disable_sound = true;
+let show_debug = true;
 
+
+//aounds
 let sounds = [];
 let amp_wave_speed = [];
 
@@ -44,11 +50,13 @@ function preload(){
     bit_font_back = loadBitmapFont('var_width_fonts/scumm_white.png', 'var_width_fonts/scumm.json');
 
     //main audio
-    for (let i=0; i<30; i++){
-        let sound = loadSound("audio/riff_3.wav");
-        sound.setLoop(true);
-        sounds.push(sound);
-        amp_wave_speed.push( random(0.9,1.1));
+    if(!disable_sound){
+        for (let i=0; i<30; i++){
+            let sound = loadSound("audio/riff_3.wav");
+            sound.setLoop(true);
+            sounds.push(sound);
+            amp_wave_speed.push( random(0.9,1.1));
+        }
     }
 }
 
@@ -141,19 +149,7 @@ function draw() {
     render();
 }
 
-function mousePressed(){
-    
-    //did they click a link word?
-    words.forEach( word =>{
-        if (mouse_x >= word.box.x && mouse_x <= word.box.x+word.box.w && mouse_y >= word.box.y && mouse_y <= word.box.y + word.box.h){
-            trigger_next_event();
-        }
-    })
 
-    //testing
-    //trigger_next_event();
-
-}
 
 function trigger_next_event(){
     if (event_list.length == 0){
@@ -186,7 +182,7 @@ function trigger_next_event(){
     set_words_from_event(ev);
 
     //play another sound
-    if (next_sound < sounds.length-1){
+    if (next_sound < sounds.length-1 && !disable_sound){
         //set the position
         let this_pos = sounds[0].currentTime();
         //randomize the rate
@@ -256,6 +252,26 @@ function mouseDragged() {
 function mouseReleased(){
 }
 
+function mousePressed(){
+
+    if (click_anywhere_to_advance){
+        trigger_next_event();
+        return;
+    }
+    
+    //did they click a link word?
+    words.forEach( word =>{
+        if (word.is_link && mouse_x >= word.box.x && mouse_x <= word.box.x+word.box.w && mouse_y >= word.box.y && mouse_y <= word.box.y + word.box.h){
+            trigger_next_event();
+            word.is_link = false;
+        }
+    })
+
+    //testing
+    //trigger_next_event();
+
+}
+
 function update(){
     //get the adjusted mouse position
     //little mouse effect
@@ -305,10 +321,12 @@ function update(){
 }
 
 function keyPressed(){
-    if (key == '1') play_quick_hit(0);
-    if (key == '2') play_quick_hit(1);
-    if (key == '3') play_quick_hit(2);
-    if (key == '4') play_quick_hit(3);
+    if (key == '1')     play_quick_hit(0);
+    if (key == '2')     play_quick_hit(1);
+    if (key == '4')     play_quick_hit(3);
+    if (key == '3')     play_quick_hit(2);
+
+    if (key == 'h')     show_debug = !show_debug
     
 }
 
@@ -341,13 +359,6 @@ function render(){
 
     fbo.image(fbo_buffer, 0,0);
 
-    fbo.noStroke();
-    fbo.fill(link_color);
-    let mouse_scatter_range = 2;
-    let mouse_scatter_x = mouse_x + random(-mouse_scatter_range, mouse_scatter_range);
-    let mouse_scatter_y = mouse_y + random(-mouse_scatter_range, mouse_scatter_range);
-    fbo.rect( Math.floor(mouse_scatter_x-2),  Math.floor(mouse_scatter_y-2), 3,3)
-    
     //console.log("number of words: "+words.length)
     words.forEach( word => {
         update_word(word);
@@ -361,6 +372,14 @@ function render(){
         }
     }
 
+    //mouse effect
+    fbo.noStroke();
+    fbo.fill(link_color);
+    let mouse_scatter_range = 2;
+    let mouse_scatter_x = mouse_x + random(-mouse_scatter_range, mouse_scatter_range);
+    let mouse_scatter_y = mouse_y + random(-mouse_scatter_range, mouse_scatter_range);
+    fbo.rect( Math.floor(mouse_scatter_x-2),  Math.floor(mouse_scatter_y-2), 3,3)
+
     //random blips
     fbo.noStroke();
     for (let i=0; i<2; i++){
@@ -373,10 +392,11 @@ function render(){
 
     //image(fbo_buffer, screen_w+10,0)
 
-
-    fill(255,0,0);
-    text("fps: "+Math.floor(frameRate()), width-45,9);
-    text("x: "+floor(mouse_x)+"\ny: "+floor(mouse_y), 1,9)
+    if (show_debug){
+        fill(255,0,0);
+        text("fps: "+Math.floor(frameRate()), width-45,9);
+        text("x: "+floor(mouse_x)+"\ny: "+floor(mouse_y), 1,9);
+    }
 }
 
 

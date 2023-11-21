@@ -29,8 +29,8 @@ function make_word({text, x, y, width } ){
     word.box = {
         x: word.x-1,
         y: word.y+3,
-        w: word.text_width+2,
-        h: word_line_spacing-1
+        w: word.text_width+3,
+        h: word_line_spacing
     }
 
     return word;

@@ -1,15 +1,25 @@
+const default_time_for_link = 30
+
 function setup_events(){
+
+    event_list.push({
+        text: "This is a test phrase. Hello.",
+        x : 30,
+        y : 70,
+        link_word: "test"
+    });
 
     event_list.push({
         text: "It's not one of their best albums",
         x : 10,
-        y : 10
+        y : 20,
+        link_word: "albums"
     });
 
     event_list.push({
         text: "But it opens with their best song",
         x : 70,
-        y : 100
+        y : 110
     });
 
     event_list.push({

@@ -16,7 +16,7 @@ let mouse_x;
 let mouse_y;
 
 //fonts
-let bit_font, bit_front_back;
+let bit_font, bit_font_link, bit_front_back;
 
 //fbo fuckery
 let screen_w = 256;
@@ -39,8 +39,17 @@ let cur_event = null;
 
 
 function preload(){
-    bit_font = loadBitmapFont('var_width_fonts/scumm.png', 'var_width_fonts/scumm.json');
-    bit_font_back = loadBitmapFont('var_width_fonts/scumm_red.png', 'var_width_fonts/scumm.json');
+    bit_font = loadBitmapFont('var_width_fonts/scumm_dark_purple.png', 'var_width_fonts/scumm.json');
+    bit_font_link = loadBitmapFont('var_width_fonts/scumm_orange.png', 'var_width_fonts/scumm.json');
+    bit_font_back = loadBitmapFont('var_width_fonts/scumm_white.png', 'var_width_fonts/scumm.json');
+
+    //main audio
+    for (let i=0; i<30; i++){
+        let sound = loadSound("audio/riff_3.wav");
+        sound.setLoop(true);
+        sounds.push(sound);
+        amp_wave_speed.push( random(0.9,1.1));
+    }
 }
 
 function setup() {
@@ -62,13 +71,7 @@ function setup() {
     // put it back otherwise everyhting renders blurry
     //pixelDensity(original_pixel_density);
     
-    //main audio
-    for (let i=0; i<30; i++){
-        let sound = loadSound("audio/riff_3.wav");
-        sound.setLoop(true);
-        sounds.push(sound);
-        amp_wave_speed.push( random(0.9,1.1));
-    }
+    
 
     //quick hits
     quick_hits.push( make_quick_hit("audio/bastards.wav", 0.75, 0.9));
@@ -87,6 +90,8 @@ function setup() {
 
     noSmooth();
     frameRate(30)
+
+    trigger_next_event();
 }
 
 function windowResized(){
@@ -138,24 +143,15 @@ function draw() {
 
 function mousePressed(){
     
-    
-    if (next_sound < sounds.length-1){
-        //set the position
-        let this_pos = sounds[0].currentTime();
-        //randomize the rate
-        let this_rate = random(1.0-rate_range, 1.0+rate_range);
-        //except for the first one
-        if (next_sound == 0){
-            this_rate = 1.0;
+    //did they click a link word?
+    words.forEach( word =>{
+        if (mouse_x >= word.box.x && mouse_x <= word.box.x+word.box.w && mouse_y >= word.box.y && mouse_y <= word.box.y + word.box.h){
+            trigger_next_event();
         }
-        //play the sound
-        sounds[next_sound].play(0, this_rate, volume, this_pos);
-        
-        console.log("start "+next_sound)
-        next_sound++;
-    }
+    })
 
-    trigger_next_event();
+    //testing
+    //trigger_next_event();
 
 }
 
@@ -167,6 +163,12 @@ function trigger_next_event(){
 
     //grab our new event
     let ev = event_list.shift();
+
+    //start a timer
+    if (!ev.link_word_timer && ev.link_word){
+        ev.link_word_timer = default_time_for_link;
+    }
+
     cur_event = ev;
 
     //by default, make all existing words die
@@ -182,6 +184,23 @@ function trigger_next_event(){
 
     //set the words for this event
     set_words_from_event(ev);
+
+    //play another sound
+    if (next_sound < sounds.length-1){
+        //set the position
+        let this_pos = sounds[0].currentTime();
+        //randomize the rate
+        let this_rate = random(1.0-rate_range, 1.0+rate_range);
+        //except for the first one
+        if (next_sound == 0){
+            this_rate = 1.0;
+        }
+        //play the sound
+        sounds[next_sound].play(0, this_rate, volume, this_pos);
+        
+        console.log("start "+next_sound)
+        next_sound++;
+    }
 
 }
 
@@ -211,8 +230,15 @@ function set_words_from_event(ev){
         word = make_word({
             text : text,
             x : cur_x,
-            y : cur_y
+            y : cur_y,
+            width : width
         })
+        //word.text_width = width;
+
+        //is this the link word?
+        if (text == cur_event.link_word){
+            console.log("link word: "+text);
+        }
 
 
         words.push(word);
@@ -252,10 +278,27 @@ function update(){
 
     //checking on current event
     if (cur_event){
+        //auto advance
         if (cur_event.auto_advance_timer){
             cur_event.auto_advance_timer --;
             if(cur_event.auto_advance_timer <= 0){
                 trigger_next_event();
+            }
+        }
+
+        //turning on the link word
+        if (cur_event.link_word_timer){
+            cur_event.link_word_timer --;
+            console.log("timer: "+cur_event.link_word_timer)
+            if (cur_event.link_word_timer <= 0){
+                cur_event.link_word_timer = null;
+                //find the word
+                words.forEach( word => {
+                    if (word.text == cur_event.link_word){
+                        word.is_link = true;
+                        console.log("set word.text");
+                    }
+                })
             }
         }
     }
@@ -299,8 +342,8 @@ function render(){
     fbo.image(fbo_buffer, 0,0);
 
     fbo.noStroke();
-    fbo.fill(255);
-    let mouse_scatter_range = 5;
+    fbo.fill(link_color);
+    let mouse_scatter_range = 2;
     let mouse_scatter_x = mouse_x + random(-mouse_scatter_range, mouse_scatter_range);
     let mouse_scatter_y = mouse_y + random(-mouse_scatter_range, mouse_scatter_range);
     fbo.rect( Math.floor(mouse_scatter_x-2),  Math.floor(mouse_scatter_y-2), 3,3)
@@ -308,7 +351,7 @@ function render(){
     //console.log("number of words: "+words.length)
     words.forEach( word => {
         update_word(word);
-        draw_word(word, fbo);
+        draw_word(word);
     })
 
     //prune dead words

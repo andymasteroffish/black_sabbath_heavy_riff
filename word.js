@@ -28,7 +28,12 @@ function make_word({text, x, y, width, event } ){
         kill_timer : null
     }
 
-    console.log(text+" delay "+word.delay_timer)
+    //do we need ot center?
+    if (event.center_x){
+        word.x = x - width/2;
+    }
+
+    //console.log(text+" delay "+word.delay_timer)
 
     word.box = {
         x: word.x-1,

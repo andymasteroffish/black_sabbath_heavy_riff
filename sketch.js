@@ -1,8 +1,9 @@
 //debug stuff
 const click_anywhere_to_advance = true;
-const disable_sound = false;
-const debug_fast_reveal = false;
+const disable_sound = true;
+const debug_fast_reveal = true;
 let show_debug = true;
+const debug_start_step = 7;
 
 
 //sounds
@@ -99,7 +100,13 @@ function setup() {
     resize_window();
 
     noSmooth();
-    frameRate(30)
+    frameRate(30);
+
+    if (debug_start_step){
+        event_list.splice(0, debug_start_step);
+        in_intro = false;
+        cue_next_event();
+    }
 
 }
 
@@ -178,7 +185,8 @@ function cue_next_event(){
 
     //debug fuckery
     if (debug_fast_reveal){
-        ev.delay_time = 0;
+        console.log("MAKE GO FAST");
+        ev.delay_timer = 1;
         ev.delay_time_wiggle = 0;
         ev.link_word_timer = 1;
     }
@@ -211,14 +219,14 @@ function cue_next_event(){
         //play the sound
         sounds[next_sound].play(0, this_rate, volume, this_pos);
         
-        console.log("start "+next_sound)
+        //console.log("start "+next_sound)
         next_sound++;
     }
 }
 
 function trigger_event(ev){
     //do we have a sound cue?
-    if (ev.quick_hit_sound){
+    if (ev.quick_hit_sound && !disable_sound){
         play_quick_hit(ev.quick_hit_sound);
     }
     //set the words for this event
@@ -235,6 +243,11 @@ function set_words_from_event(ev){
     let cur_x = ev.x;
     let cur_y = ev.y;
 
+    let max_x = screen_w - 5;
+    if (ev.max_width){
+        max_x = ev.x + ev.max_width;
+    }
+
     fbo.bitmapTextFont(bit_font);
 
     texts.forEach( text => {
@@ -243,7 +256,7 @@ function set_words_from_event(ev){
 
         
         //time for a new line?
-        if (cur_x + width > screen_w){
+        if (cur_x + width > max_x){
             cur_x = ev.x;
             cur_y += word_line_spacing;
         }
@@ -329,6 +342,7 @@ function update(){
         //start with the delay
         if (cur_event.delay_timer > 0){
             cur_event.delay_timer--;
+            //console.log("delay: "+cur_event.delay_timer);
             if (cur_event.delay_timer <= 0){
                 trigger_event(cur_event);
             }

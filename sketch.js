@@ -1,9 +1,9 @@
 //debug stuff
-const click_anywhere_to_advance = true;
-const disable_sound = true;
-const debug_fast_reveal = true;
-let show_debug = true;
-const debug_start_step = 7;
+const click_anywhere_to_advance = false;
+const disable_sound = false;
+const debug_fast_reveal = false;
+let show_debug = false;
+const debug_start_step = 0;
 
 
 //sounds
@@ -50,13 +50,18 @@ let in_intro = true;
 
 
 function preload(){
+    //word events
+    event_list = [];
+    setup_events();
+
+    //fonts
     bit_font = loadBitmapFont('var_width_fonts/scumm_dark_purple.png', 'var_width_fonts/scumm.json');
     bit_font_link = loadBitmapFont('var_width_fonts/scumm_orange.png', 'var_width_fonts/scumm.json');
     bit_font_back = loadBitmapFont('var_width_fonts/scumm_white.png', 'var_width_fonts/scumm.json');
 
     //main audio
     if(!disable_sound){
-        for (let i=0; i<30; i++){
+        for (let i=0; i<event_list.length; i++){
             let sound = loadSound("audio/riff_3.wav");
             sound.setLoop(true);
             sounds.push(sound);
@@ -89,13 +94,17 @@ function setup() {
     //quick hits
     quick_hits.push( make_quick_hit("audio/sabbath_bloody_sabbath.wav", "sabbath_bloody_sabbath", 0.75, 0.9));
     quick_hits.push( make_quick_hit("audio/bastards.wav", "bastards", 0.75, 0.9));
-    quick_hits.push( make_quick_hit("audio/light_of_day.wav", "light_of_day", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/light_of_day.wav", "light_of_day", 0.5, 0.9));
+    quick_hits.push( make_quick_hit("audio/mind_away.wav", "mind_away", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/execution_long.wav", "execution", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/lies.wav", "lies", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/no_return.wav", "no_return", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/nobody.wav", "nobody", 0.9, 1.2));
     quick_hits.push( make_quick_hit("audio/solo1_fade.wav", "solo1", 0.96, 1.04));
     quick_hits.push( make_quick_hit("audio/solo_isolated.wav", "solo2", 0.96, 1.04));
+    quick_hits.push( make_quick_hit("audio/acrobat2.wav", "acrobat", 0.96, 1.04));
     
-    //word events
-    event_list = [];
-    setup_events();
+    
 
     resize_window();
 
@@ -188,7 +197,7 @@ function cue_next_event(){
         console.log("MAKE GO FAST");
         ev.delay_timer = 1;
         ev.delay_time_wiggle = 0;
-        ev.link_word_timer = 1;
+        ev.link_word_timer = 2;
     }
 
     //stre the event
@@ -238,12 +247,11 @@ function set_words_from_event(ev){
     console.log(ev)
     texts = ev.text.split(" ");
 
-    let padding = 15;
 
     let cur_x = ev.x;
     let cur_y = ev.y;
 
-    let max_x = screen_w - 5;
+    let max_x = screen_w - 15;
     if (ev.max_width){
         max_x = ev.x + ev.max_width;
     }
@@ -310,6 +318,10 @@ function mousePressed(){
     //did they click a link word?
     words.forEach( word =>{
         if (word.is_link && mouse_x >= word.box.x && mouse_x <= word.box.x+word.box.w && mouse_y >= word.box.y && mouse_y <= word.box.y + word.box.h){
+            //do we have a sound cue?
+            if (cur_event.quick_hit_on_click && !disable_sound){
+                play_quick_hit(cur_event.quick_hit_on_click);
+            }
             cue_next_event();
             word.is_link = false;
         }
@@ -361,6 +373,7 @@ function update(){
                 cur_event.link_word_timer --;
                 if (cur_event.link_word_timer <= 0){
                     cur_event.link_word_timer = null;
+                    console.log("time to set link word for: "+cur_event.text+". Word is: "+cur_event.link_word)
                     //find the word
                     words.forEach( word => {
                         if (word.text == cur_event.link_word){
@@ -453,7 +466,7 @@ function render(){
             "click to start"
         ]
 
-        let cur_y = 20;
+        let cur_y = 40;
         let line_count = 0;
         intro_lines.forEach( line => {
             if (frameCount * 1.5 > cur_y){
@@ -515,8 +528,8 @@ function fuck_about(){
     let time2 = millis() / 4751;
 
     if (in_intro){
-        time = 0;
-        time2 = 0;
+        time = 3.14;
+        time2 = 3.14;
     }
 
     let shrink_prc = 1.03;// 1.01 + sin(time * 0.7) * 0.1;

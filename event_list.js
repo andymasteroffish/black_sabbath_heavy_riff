@@ -64,10 +64,10 @@ function setup_events(){
     });
 
     event_list.push({
-        text: "With that freight truck of a riff",
+        text: "With that freight train of a riff",
         x : 10,
         y : 180,
-        link_word: "truck"
+        link_word: "train"
     });
 
     event_list.push({
@@ -82,7 +82,8 @@ function setup_events(){
         x : 28,
         y : 128,
         max_width : 80,
-        link_word: "permanent"
+        link_word: "permanent",
+        quick_hit_on_click : "solo1"
     });
 
     //------------------------------------------------
@@ -95,6 +96,7 @@ function setup_events(){
         text: "I'm driving in high school",
         x : this_x,
         y : this_y,
+        delay_timer : default_event_delay_time * 7,
         link_word: "driving"
     });
 
@@ -122,7 +124,7 @@ function setup_events(){
         text: "the riff turns over in my head",
         x : this_x,
         y : this_y,
-        link_word: "album"
+        link_word: "riff"
     });
 
     this_y -= y_step;
@@ -137,25 +139,26 @@ function setup_events(){
     this_y -= y_step;
     this_x += x_step;
     event_list.push({
-        text: "National Acrobat starts",
+        text: "A National Acrobat comes on",
         x : this_x,
         y : this_y,
-        link_word: "Acrobat"
+        link_word: "Acrobat",
+        quick_hit_sound: "acrobat"
     });
 
     this_y -= y_step;
     this_x += x_step;
     event_list.push({
-        text: "I hit rewind",
+        text: "I hit rewind, of course",
         x : this_x,
         y : this_y,
-        link_word: "rewind"
+        link_word: "rewind,"
     });
 
     this_y -= y_step;
     this_x += x_step;
     event_list.push({
-        text: "I miss my exit ",
+        text: "I miss my exit",
         x : this_x,
         y : this_y,
         link_word: "miss"
@@ -164,10 +167,123 @@ function setup_events(){
     this_y -= y_step;
     this_x += x_step;
     event_list.push({
-        text: "I don't care",
+        text: "I don't care, of course",
         x : this_x,
         y : this_y,
         link_word: "don't"
     });
+
+
+    //------------------------------------------------
+    
+    event_list.push({
+        text: "I'm at a party in college",
+        x : 115,
+        y : 102,
+        delay_timer : default_event_delay_time * 3,
+        link_word: "party",
+        quick_hit_on_click : "execution"
+    });
+
+    event_list.push({
+        text: "Far too stoned",
+        x : 20,
+        y : 220,
+        link_word: "stoned"
+    });
+
+    event_list.push({
+        text: "Merging with the bed I'm on",
+        x : 40,
+        y : 40,
+        link_word: "Merging",
+        quick_hit_on_click: "nobody"
+    });
+
+    event_list.push({
+        text: "I guess somebody put on Sabbath",
+        x : 10,
+        y : 126,
+        link_word: "Sabbath",
+    });
+
+    event_list.push({
+        text: "I get distracted",
+        x : 110,
+        y : 40,
+        link_word: "distracted",
+        quick_hit_sound : "lies"
+    });
+
+    event_list.push({
+        text: "Was I hooking up with somebody?",
+        x : 20,
+        y : 162,
+        link_word: "with",
+
+    });
+
+    event_list.push({
+        text: "It bounces around in my skull",
+        x : 120,
+        y : 70,
+        link_word: "none",
+        auto_advance_timer : 30,
+    });
+
+    event_list.push({
+        text: "Reverberating",
+        center_x : true,
+        do_not_clear_old_words : true,
+        x : screen_w/2,
+        y : 130,
+        link_word: "Reverberating",
+        quick_hit_sound: "no_return"
+    });
+
+    event_list.push({
+        text: "Like a whippit high",
+        x : 10,
+        y : 25,
+        auto_advance_timer : 30,
+    });
+
+    event_list.push({
+        text: "that has built a permanent home",
+        x : 20,
+        y : 50,
+        max_width : 10,
+        do_not_clear_old_words : true,
+        auto_advance_timer : 30,
+        quick_hit_sound: "mind_away"
+    });
+
+    event_list.push({
+        text: "in my mind",
+        x : 90,
+        y : 215,
+        do_not_clear_old_words : true,
+        link_word : "permanent"
+    });
+
+    event_list.push({
+        text: "Grinding me into dust",
+        x : 20,
+        y : 90,
+        link_word: "Grinding",
+        quick_hit_on_click: "light_of_day"
+    });
+
+
+     //------------------------------------------------
+
+     event_list.push({
+        text: "I'm where I am right now",
+        x : 40,
+        y : 20,
+        delay_timer : default_event_delay_time * 8,
+        link_word: "now",
+    });
+
 
 }

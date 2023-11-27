@@ -1,7 +1,7 @@
 //debug stuff
-const click_anywhere_to_advance = false;
+const click_anywhere_to_advance = true;
 const disable_sound = false;
-const debug_fast_reveal = false;
+const debug_fast_reveal = true;
 let show_debug = false;
 const debug_start_step = 0;
 
@@ -48,6 +48,9 @@ let cur_event = null;
 //into
 let in_intro = true;
 
+let bg_color_start = 0.95;
+let bg_color_end = 0.05;
+
 
 function preload(){
     //word events
@@ -55,7 +58,7 @@ function preload(){
     setup_events();
 
     //fonts
-    bit_font = loadBitmapFont('var_width_fonts/scumm_dark_purple.png', 'var_width_fonts/scumm.json');
+    bit_font = loadBitmapFont('var_width_fonts/scumm_red2.png', 'var_width_fonts/scumm.json');
     bit_font_link = loadBitmapFont('var_width_fonts/scumm_orange.png', 'var_width_fonts/scumm.json');
     bit_font_back = loadBitmapFont('var_width_fonts/scumm_white.png', 'var_width_fonts/scumm.json');
 
@@ -144,6 +147,7 @@ function resize_window(){
     style +=  "padding-left: "+canvas_x+"px;";
     style +=  "padding-top: "+canvas_y+"px;";
     document.getElementById("defaultCanvas0").style = style;
+
 }
 
 //make an array of one-off sound effects
@@ -230,6 +234,11 @@ function cue_next_event(){
         
         //console.log("start "+next_sound)
         next_sound++;
+
+        //move up the background
+        let bg_prc = next_sound / sounds.length;
+        let bg_val = (1.0-bg_prc) * bg_color_start + bg_prc * bg_color_end;
+        document.body.style.backgroundColor = "rgba(0,0,0,"+bg_val+")";
     }
 }
 
@@ -420,7 +429,7 @@ function play_quick_hit(id){
 
 //Drawing into the FBO
 function render(){
-    background(100);
+    background(1);
 
     //going back over this code, I'm not really sure why this only happens once
     if (frameCount == 3 ){
@@ -435,7 +444,7 @@ function render(){
     fuck_about()
 
     //now draw the real fbo
-    fbo.background(0);
+    fbo.background(1);
 
     fbo.image(fbo_buffer, 0,0);
 

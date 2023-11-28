@@ -275,15 +275,50 @@ function setup_events(){
     });
 
 
-     //------------------------------------------------
+    //------------------------------------------------
 
-     event_list.push({
+    event_list.push({
         text: "I'm where I am right now",
         x : 40,
         y : 20,
-        delay_timer : default_event_delay_time * 8,
         link_word: "now",
     });
 
+    event_list.push({
+        text: "I can't sleep",
+        x : 35,
+        y : 70,
+        link_word: "sleep",
+    });
+
+    event_list.push({
+        text: "I play the song in my head",
+        x : 100,
+        y : 100,
+        link_word: "head",
+    });
+
+    event_list.push({
+        text: "Sometimes I get to the first line",
+        x : 10,
+        y : 170,
+        link_word: "Sometimes",
+    });
+
+    event_list.push({
+        text: "Sometimes I don't",
+        x : 50,
+        y : 30,
+        max_width: 100,
+        link_word: "Sometimes",
+        quick_hit_on_click : "bastards"
+    });
+
+    event_list.push({
+        text: "",
+        x : 0,
+        y : 0,
+        link_word: "none",
+    });
 
 }

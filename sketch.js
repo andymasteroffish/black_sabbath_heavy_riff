@@ -104,7 +104,7 @@ function setup() {
     quick_hits.push( make_quick_hit("audio/no_return.wav", "no_return", 0.9, 1.2));
     quick_hits.push( make_quick_hit("audio/nobody.wav", "nobody", 0.9, 1.2));
     quick_hits.push( make_quick_hit("audio/solo1_fade.wav", "solo1", 0.96, 1.04));
-    quick_hits.push( make_quick_hit("audio/solo_isolated.wav", "solo2", 0.96, 1.04));
+    //quick_hits.push( make_quick_hit("audio/solo_isolated.wav", "solo2", 0.96, 1.04));
     quick_hits.push( make_quick_hit("audio/acrobat2.wav", "acrobat", 0.96, 1.04));
     
     
@@ -311,11 +311,17 @@ function mouseReleased(){
 
 function mousePressed(){
 
-    //clikcing to exit the intro
+    //clicking to exit the intro
     if (in_intro){
         in_intro = false;
         cue_next_event();
         return;
+    }
+
+    //if we're out of events play random sounds
+    if (event_list.length == 0){
+        play_random_quick_hit();
+        draw_noise(mouse_x, mouse_y);
     }
 
     //debug tool
@@ -427,6 +433,17 @@ function play_quick_hit(id){
     }
 }
 
+function play_random_quick_hit(){
+    let this_hit = random(quick_hits);
+
+    //no national acrobat
+    if (this_hit.id == "acrobat"){
+        return play_random_quick_hit();
+    }
+
+    play_quick_hit(this_hit.id);
+}
+
 //Drawing into the FBO
 function render(){
     background(1);
@@ -522,6 +539,35 @@ function render(){
         text("fps: "+Math.floor(frameRate()), width-45,9);
         text("x: "+floor(mouse_x)+"\ny: "+floor(mouse_y), 1,9);
     }
+}
+
+function draw_noise(center_x, center_y){
+    let base_r = 210;
+    let base_g = 54;
+    let base_b = 67;
+
+    let color_range = 50;
+
+    let dist = 30;
+
+    let activate_chance = 0.1;
+
+    fbo.noStroke();
+
+    for (let x=center_x-dist; x<=center_x+dist; x++){
+        for (let y=center_y-dist; y<=center_y+dist; y++){
+            if (random(0,1) < activate_chance){
+                fbo.fill(
+                    base_r + random(-color_range, color_range),
+                    base_g + random(-color_range, color_range),
+                    base_b + random(-color_range, color_range)
+                )
+                fbo.rect(x,y,2,2);
+            }
+        }
+    }
+
+    
 }
 
 

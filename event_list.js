@@ -1,4 +1,4 @@
-const default_event_delay_time = 30;
+const default_event_delay_time = 1.0;
 const default_delay_wiggle = 10;
 
 const default_time_for_link = 40
@@ -34,9 +34,9 @@ function setup_events(){
         center_x : true,
         x : screen_w/2,
         y : 85,
-        auto_advance_timer : 30,
+        auto_advance_timer : default_event_delay_time,
         delay_time_wiggle : 0,
-        delay_timer : 30,
+        delay_timer : default_event_delay_time,
         insta_kill_other_text : true,
         quick_hit_sound : "sabbath_bloody_sabbath"
     });
@@ -48,8 +48,8 @@ function setup_events(){
         y : 115,
         do_not_clear_old_words : true,
         delay_time_wiggle : 0,
-        delay_timer : 1,
-        auto_advance_timer : 30,
+        delay_timer : 0.01,
+        auto_advance_timer : default_event_delay_time,
     });
 
     event_list.push({
@@ -59,7 +59,7 @@ function setup_events(){
         y : 145,
         do_not_clear_old_words : true,
         delay_time_wiggle : 0,
-        delay_timer : 1,
+        delay_timer : 0.01,
         link_word: "Sabbath"
     });
 
@@ -228,7 +228,7 @@ function setup_events(){
         x : 120,
         y : 70,
         link_word: "none",
-        auto_advance_timer : 30,
+        auto_advance_timer : default_event_delay_time,
     });
 
     event_list.push({
@@ -245,7 +245,7 @@ function setup_events(){
         text: "Like a whippit high",
         x : 10,
         y : 25,
-        auto_advance_timer : 30,
+        auto_advance_timer : default_event_delay_time,
     });
 
     event_list.push({
@@ -254,7 +254,7 @@ function setup_events(){
         y : 50,
         max_width : 10,
         do_not_clear_old_words : true,
-        auto_advance_timer : 30,
+        auto_advance_timer : default_event_delay_time,
         quick_hit_sound: "mind_away"
     });
 

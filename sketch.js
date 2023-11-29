@@ -45,8 +45,11 @@ let words = [];
 let event_list = [];
 let cur_event = null;
 
+let delta_time = 0;
+
 //intro
 let in_intro = true;
+let can_end_intro = false;
 
 let bg_color_start = 0.95;
 let bg_color_end = 0.05;
@@ -55,8 +58,8 @@ let bg_color_end = 0.05;
 let in_outro = false;
 let outtro_timer = 0;
 
-let outtro_start_fade_time = 40;
-let outtro_fade_duration =  20;
+let outtro_start_fade_time = 30;
+let outtro_fade_duration =  15;
 
 let fade_prc = 0;
 
@@ -215,7 +218,7 @@ function cue_next_event(){
     //debug fuckery
     if (debug_fast_reveal){
         console.log("MAKE GO FAST");
-        ev.delay_timer = 1;
+        ev.delay_timer = 0.01;
         ev.delay_time_wiggle = 0;
         ev.link_word_timer = 2;
     }
@@ -272,8 +275,8 @@ function trigger_event(ev){
 }
 
 function set_words_from_event(ev){
-    console.log("set words: "+ev.text)
-    console.log(ev)
+    //console.log("set words: "+ev.text)
+    //console.log(ev)
     texts = ev.text.split(" ");
 
 
@@ -333,8 +336,10 @@ function mousePressed(){
 
     //clicking to exit the intro
     if (in_intro){
-        in_intro = false;
-        cue_next_event();
+        if (can_end_intro || debug_fast_reveal){
+            in_intro = false;
+            cue_next_event();
+        }
         return;
     }
 
@@ -366,6 +371,8 @@ function mousePressed(){
 }
 
 function update(){
+    delta_time = deltaTime / 1000.0;
+
     //get the adjusted mouse position
     //little mouse effect
     mouse_x = (winMouseX - canvas_x) / scale_steps;
@@ -389,7 +396,7 @@ function update(){
     if (cur_event){
         //start with the delay
         if (cur_event.delay_timer > 0){
-            cur_event.delay_timer--;
+            cur_event.delay_timer -= delta_time;
             //console.log("delay: "+cur_event.delay_timer);
             if (cur_event.delay_timer <= 0){
                 trigger_event(cur_event);
@@ -398,7 +405,7 @@ function update(){
         else{
             //auto advance
             if (cur_event.auto_advance_timer){
-                cur_event.auto_advance_timer --;
+                cur_event.auto_advance_timer -= delta_time;
                 if(cur_event.auto_advance_timer <= 0){
                     cue_next_event();
                 }
@@ -424,14 +431,14 @@ function update(){
 
     //managing the outtro
     if (in_outro){
-        outtro_timer += deltaTime / 1000.0;
-        console.log("outro: "+outtro_timer);
+        outtro_timer += delta_time;
+        //console.log("outro: "+outtro_timer);
 
         //time to fade out?
         if (outtro_timer > outtro_start_fade_time){
             fade_prc = (outtro_timer-outtro_start_fade_time) / outtro_fade_duration;
             if (fade_prc > 1)   fade_prc = 1;
-            console.log("fade: "+fade_prc);
+            //console.log("fade: "+fade_prc);
 
             //fade the background
             let bg_val = fade_prc * bg_color_start + (1.0-fade_prc) * bg_color_end;
@@ -452,15 +459,15 @@ function update(){
 
         if (outtro_timer > outtro_start_fade_time + outtro_fade_duration){
             let new_time = outtro_timer - (outtro_start_fade_time + outtro_fade_duration);
-            let new_rate = max(1,  (new_time-2) * 0.1);
-            console.log("rate: "+new_rate);
+            let new_rate = max(1,  (new_time-1) * 0.1);
+            //console.log("rate: "+new_rate);
             sounds[0].rate(new_rate);
 
             let rate_cutoff = 2;
             if (new_rate > rate_cutoff){
                 let vol_prc = 1.0 - (new_rate-rate_cutoff) * 2;
                 if (vol_prc < 0) vol_prc = 0;
-                console.log("volume: "+vol_prc);
+                //console.log("volume: "+vol_prc);
                 sounds[0].setVolume(volume*vol_prc);
 
                 if (vol_prc <= 0){
@@ -561,8 +568,10 @@ function render(){
 
         let cur_y = 40;
         let line_count = 0;
+        let timer = millis() / 1000;
+        can_end_intro = timer > 4;
         intro_lines.forEach( line => {
-            if (frameCount * 1.5 > cur_y){
+            if (timer*45 > cur_y){
                 if (line_count > 2){
                     fbo.bitmapTextFont(bit_font_back);
                 }else{

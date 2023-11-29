@@ -1,7 +1,7 @@
 //debug stuff
-const click_anywhere_to_advance = true;
+const click_anywhere_to_advance = false;
 const disable_sound = false;
-const debug_fast_reveal = true;
+const debug_fast_reveal = false;
 let show_debug = false;
 const debug_start_step = 0;
 
@@ -131,9 +131,13 @@ function resize_window(){
     // console.log("screen W "+window.innerWidth);
     // console.log("screen H "+window.innerHeight);
 
-    let smaller_dimension = min(window.innerWidth, window.innerHeight);
+
+    let padding = 100;
+
+    let smaller_dimension = min(window.innerWidth, window.innerHeight) - padding;
     
     scale_steps = max(1, floor(smaller_dimension / screen_w) );
+
     
     canvas_w = screen_w * scale_steps;
     canvas_h = screen_h * scale_steps;
@@ -548,6 +552,33 @@ function draw_noise(center_x, center_y){
 
     let color_range = 50;
 
+    let num_particles = 500;
+    let noise_zoom = random(0.8,2);
+    let min_dist = 10;
+    let max_dist = 90;
+    let seed = millis();
+    for (let i=0; i<num_particles; i++){
+        let a = random(TWO_PI);
+       
+        let n = noise(seed +sin(a) * noise_zoom, 1+cos(a)*noise_zoom);
+        let far_dist = (1.0-n) * min_dist + n * max_dist;
+
+        let dist = random(far_dist*0.6, far_dist);
+
+        let x = center_x + cos(a) * dist;
+        let y = center_y + sin(a) * dist;
+
+        let size = floor(random(1,4));
+
+        fbo.fill(
+            base_r + random(-color_range, color_range),
+            base_g + random(-color_range, color_range),
+            base_b + random(-color_range, color_range)
+        )
+        fbo.rect(x,y,size,size);
+    }
+
+    /*
     let dist = 30;
 
     let activate_chance = 0.1;
@@ -566,6 +597,7 @@ function draw_noise(center_x, center_y){
             }
         }
     }
+    */
 
     
 }

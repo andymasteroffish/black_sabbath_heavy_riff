@@ -8,3 +8,11 @@
 [] figure out the page background
 
 [] does this work on the phone? 
+
+
+
+Nice to haves:
+
+[] at the end, slowly fade to black, turning down the volume of the quick hits and removing the riffs one by one until there is just one left
+
+[X] maybe don't have the canvas take up the whole screen

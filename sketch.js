@@ -45,11 +45,20 @@ let words = [];
 let event_list = [];
 let cur_event = null;
 
-//into
+//intro
 let in_intro = true;
 
 let bg_color_start = 0.95;
 let bg_color_end = 0.05;
+
+//outtro
+let in_outro = false;
+let outtro_timer = 0;
+
+let outtro_start_fade_time = 40;
+let outtro_fade_duration =  20;
+
+let fade_prc = 0;
 
 
 function preload(){
@@ -98,11 +107,11 @@ function setup() {
     quick_hits.push( make_quick_hit("audio/sabbath_bloody_sabbath.wav", "sabbath_bloody_sabbath", 0.75, 0.9));
     quick_hits.push( make_quick_hit("audio/bastards.wav", "bastards", 0.75, 0.9));
     quick_hits.push( make_quick_hit("audio/light_of_day.wav", "light_of_day", 0.5, 0.9));
-    quick_hits.push( make_quick_hit("audio/mind_away.wav", "mind_away", 0.9, 1.2));
-    quick_hits.push( make_quick_hit("audio/execution_long.wav", "execution", 0.9, 1.2));
-    quick_hits.push( make_quick_hit("audio/lies.wav", "lies", 0.9, 1.2));
-    quick_hits.push( make_quick_hit("audio/no_return.wav", "no_return", 0.9, 1.2));
-    quick_hits.push( make_quick_hit("audio/nobody.wav", "nobody", 0.9, 1.2));
+    quick_hits.push( make_quick_hit("audio/mind_away.wav", "mind_away", 0.7, 1));
+    quick_hits.push( make_quick_hit("audio/execution_long.wav", "execution", 0.8, 1.1));
+    quick_hits.push( make_quick_hit("audio/lies.wav", "lies", 0.8, 1.1));
+    quick_hits.push( make_quick_hit("audio/no_return.wav", "no_return", 0.7, 1.0));
+    quick_hits.push( make_quick_hit("audio/nobody.wav", "nobody", 0.8, 1.1));
     quick_hits.push( make_quick_hit("audio/solo1_fade.wav", "solo1", 0.96, 1.04));
     //quick_hits.push( make_quick_hit("audio/solo_isolated.wav", "solo2", 0.96, 1.04));
     quick_hits.push( make_quick_hit("audio/acrobat2.wav", "acrobat", 0.96, 1.04));
@@ -115,6 +124,9 @@ function setup() {
     frameRate(30);
 
     if (debug_start_step){
+        for (let i=0; i<debug_start_step; i++){
+            play_next_riff();
+        }
         event_list.splice(0, debug_start_step);
         in_intro = false;
         cue_next_event();
@@ -224,6 +236,10 @@ function cue_next_event(){
 
 
     //play another sound
+    play_next_riff();
+}
+
+function play_next_riff(){
     if (next_sound < sounds.length-1 && !disable_sound){
         //set the position
         let this_pos = sounds[0].currentTime();
@@ -326,6 +342,7 @@ function mousePressed(){
     if (event_list.length == 0){
         play_random_quick_hit();
         draw_noise(mouse_x, mouse_y);
+        in_outro = true;    //turn it on if it wasn't
     }
 
     //debug tool
@@ -404,14 +421,60 @@ function update(){
             }
         }
     }
+
+    //managing the outtro
+    if (in_outro){
+        outtro_timer += deltaTime / 1000.0;
+        console.log("outro: "+outtro_timer);
+
+        //time to fade out?
+        if (outtro_timer > outtro_start_fade_time){
+            fade_prc = (outtro_timer-outtro_start_fade_time) / outtro_fade_duration;
+            if (fade_prc > 1)   fade_prc = 1;
+            console.log("fade: "+fade_prc);
+
+            //fade the background
+            let bg_val = fade_prc * bg_color_start + (1.0-fade_prc) * bg_color_end;
+            document.body.style.backgroundColor = "rgba(0,0,0,"+bg_val+")";
+
+            //fade the quick hits
+            let quick_vol = max(0.05, 1.0-fade_prc);
+            quick_hits.forEach( hit => {
+                for (let i=0; i<hit.sounds.length; i++){
+                    hit.sounds[i].setVolume(quick_vol)
+                }
+            })
+
+            //stop the riffs
+            let cur_sound = floor(fade_prc * 1 + (1.0-fade_prc) * sounds.length);
+            sounds[cur_sound].pause();
+        }
+
+        if (outtro_timer > outtro_start_fade_time + outtro_fade_duration){
+            let new_time = outtro_timer - (outtro_start_fade_time + outtro_fade_duration);
+            let new_rate = max(1,  (new_time-2) * 0.1);
+            console.log("rate: "+new_rate);
+            sounds[0].rate(new_rate);
+
+            let rate_cutoff = 2;
+            if (new_rate > rate_cutoff){
+                let vol_prc = 1.0 - (new_rate-rate_cutoff) * 2;
+                if (vol_prc < 0) vol_prc = 0;
+                console.log("volume: "+vol_prc);
+                sounds[0].setVolume(volume*vol_prc);
+
+                if (vol_prc <= 0){
+                    sounds[0].pause();
+                }
+            }
+        }
+
+    }
 }
 
 function keyPressed(){
-    if (key == '1')     play_quick_hit("sabbath_bloody_sabbath");
-    // if (key == '2')     play_quick_hit(1);
-    // if (key == '4')     play_quick_hit(3);
-    // if (key == '3')     play_quick_hit(2);
-
+    //if (key == '1')     play_quick_hit("sabbath_bloody_sabbath");
+    
     if (key == 'h')     show_debug = !show_debug
     
 }
@@ -538,6 +601,13 @@ function render(){
 
     //image(fbo_buffer, screen_w+10,0)
 
+    //fade at the end
+    if (in_outro){
+        noStroke();
+        fill(0,0,0, 255*fade_prc);
+        rect(-1,-1,screen_w+2, screen_h+2);
+    }
+
     if (show_debug){
         fill(255,0,0);
         text("fps: "+Math.floor(frameRate()), width-45,9);
@@ -564,6 +634,10 @@ function draw_noise(center_x, center_y){
         let far_dist = (1.0-n) * min_dist + n * max_dist;
 
         let dist = random(far_dist*0.6, far_dist);
+
+        if (in_outro){
+            dist *= (1.0 - fade_prc);
+        }
 
         let x = center_x + cos(a) * dist;
         let y = center_y + sin(a) * dist;
@@ -624,6 +698,10 @@ function fuck_about(){
     let noise_shuffle_chance = 0.1;
    
     let center_move_dist = 128;
+
+    if (in_outro){
+        center_move_dist *= (1.0-fade_prc);
+    }
     //let curve = 1;
 
     let center_x = fbo_buffer.width/2 + sin(time) * center_move_dist;

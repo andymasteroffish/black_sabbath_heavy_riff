@@ -71,18 +71,18 @@ function setup_events(){
     });
 
     event_list.push({
-        text: "It chases me down and beats the shit out of me",
+        text: "it chases me down and beats the shit out of me",
         x : 126,
         y : 60,
         link_word: "beats"
     });
 
     event_list.push({
-        text: "A permanent part of my brain",
+        text: "an exhilarating, unyielding doom that will be lodged forever in my psyche",
         x : 28,
-        y : 128,
-        max_width : 80,
-        link_word: "permanent",
+        y : 80,
+        max_width : 160,
+        link_word: "doom",
         quick_hit_on_click : "solo1"
     });
 
@@ -178,7 +178,7 @@ function setup_events(){
     
     event_list.push({
         text: "I'm at a party in college",
-        x : 115,
+        x : 75,
         y : 102,
         delay_timer : default_event_delay_time * 3,
         link_word: "party",
@@ -282,6 +282,7 @@ function setup_events(){
         x : 40,
         y : 20,
         link_word: "now",
+        delay_timer : default_event_delay_time * 6,
     });
 
     event_list.push({

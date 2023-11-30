@@ -11,6 +11,8 @@
 
 [] put your name on it
 
+[X] stop letting the player make one shots after the fade mostly goes
+
 
 
 Nice to haves:

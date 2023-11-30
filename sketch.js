@@ -3,7 +3,7 @@ const click_anywhere_to_advance = false;
 const disable_sound = false;
 const debug_fast_reveal = false;
 let show_debug = false;
-const debug_start_step = 0;
+const debug_start_step = 40;
 
 
 //sounds
@@ -58,7 +58,7 @@ let bg_color_end = 0.05;
 let in_outro = false;
 let outtro_timer = 0;
 
-let outtro_start_fade_time = 30;
+let outtro_start_fade_time = 2;// 30;
 let outtro_fade_duration =  15;
 
 let fade_prc = 0;
@@ -445,7 +445,7 @@ function update(){
             document.body.style.backgroundColor = "rgba(0,0,0,"+bg_val+")";
 
             //fade the quick hits
-            let quick_vol = max(0.05, 1.0-fade_prc);
+            let quick_vol = 1.0-fade_prc;
             quick_hits.forEach( hit => {
                 for (let i=0; i<hit.sounds.length; i++){
                     hit.sounds[i].setVolume(quick_vol)
@@ -459,7 +459,7 @@ function update(){
 
         if (outtro_timer > outtro_start_fade_time + outtro_fade_duration){
             let new_time = outtro_timer - (outtro_start_fade_time + outtro_fade_duration);
-            let new_rate = max(1,  (new_time-1) * 0.1);
+            let new_rate = max(1,  (new_time) * 0.1);
             //console.log("rate: "+new_rate);
             sounds[0].rate(new_rate);
 
@@ -509,6 +509,10 @@ function play_quick_hit(id){
 
 function play_random_quick_hit(){
     let this_hit = random(quick_hits);
+
+    if (fade_prc >= 1){
+        return;
+    }
 
     //no national acrobat
     if (this_hit.id == "acrobat"){

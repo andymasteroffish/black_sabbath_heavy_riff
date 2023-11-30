@@ -3,7 +3,7 @@ const click_anywhere_to_advance = false;
 const disable_sound = false;
 const debug_fast_reveal = false;
 let show_debug = false;
-const debug_start_step = 40;
+const debug_start_step = 0;
 
 
 //sounds
@@ -58,7 +58,7 @@ let bg_color_end = 0.05;
 let in_outro = false;
 let outtro_timer = 0;
 
-let outtro_start_fade_time = 2;// 30;
+let outtro_start_fade_time = 30;
 let outtro_fade_duration =  15;
 
 let fade_prc = 0;

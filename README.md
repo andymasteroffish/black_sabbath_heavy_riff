@@ -4,5 +4,7 @@ When you ask the reasons why
 They just tell you that you're on your own
 Fill your head all full of lies
 
+run `python3 -m http.server`
 
-Maybe using: https://github.com/asalga/p5.bitmapFont
+
+Maybe using: https://github.com/asalga/p5.bitmapFont`
